@@ -417,14 +417,11 @@ int Volume::mountVol() {
         errno = 0;
         int gid;
 
-        if (primaryStorage) {
-            // Special case the primary SD card.
-            // For this we grant write access to the SDCARD_RW group.
-            gid = AID_SDCARD_RW;
-        } else {
-            // For secondary external storage we keep things locked up.
-            gid = AID_MEDIA_RW;
-        }
+        // In AOSP, non-primary storage devices were assigned to the MEDIA_RW group
+        // This means removel SD cards & USB devices are not writable
+        // We bypass this restriction by assigning all storage devices to the SDCARD_RW group
+        gid = AID_SDCARD_RW;
+
         if (Fat::doMount(devicePath, "/mnt/secure/staging", false, false, false,
                 AID_SYSTEM, gid, 0702, true)) {
             SLOGE("%s failed to mount via VFAT (%s)\n", devicePath, strerror(errno));
